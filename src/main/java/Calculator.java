@@ -1,7 +1,8 @@
 
 public class Calculator {
     private int display, accumulator;
-    private boolean additionPending, subtractionPending, clearOnNextDigit;
+    private boolean clearOnNextDigit;
+    private Operator pendingOperator;
 
     public void digit(char c) {
         if(c < '0' || c > '9')
@@ -19,25 +20,40 @@ public class Calculator {
     }
 
     public void plus() {
-        accumulator = display;
-        additionPending = true;
-        clearOnNextDigit = true;
+        operator(Operator.PLUS);
     }
 
     public void minus() {
+        operator(Operator.MINUS);
+    }
+
+    private void operator(Operator op) {
         accumulator = display;
-        subtractionPending = true;
+        pendingOperator = op;
         clearOnNextDigit = true;
     }
 
     public void result() {
-        if(additionPending) {
-            display += accumulator;
-            additionPending = false;
+        if(pendingOperator != null) {
+            display = pendingOperator.apply(accumulator, display);
+            pendingOperator = null;
         }
-        if(subtractionPending) {
-            display = accumulator - display;
-            subtractionPending = false;
-        }
+    }
+
+    private static enum Operator {
+        PLUS {
+            @Override
+            public int apply(int accumulator, int display) {
+                return accumulator + display;
+            }
+        },
+        MINUS {
+            @Override
+            public int apply(int accumulator, int display) {
+                return accumulator - display;
+            }
+        };
+
+        public abstract int apply(int accumulator, int display);
     }
 }
